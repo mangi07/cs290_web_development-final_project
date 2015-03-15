@@ -12,17 +12,17 @@ window.onload = function (){
 			
 }
 
-
+//MAY WANT TO CHANGE THIS TO BE A DEFAULT LOCATION!!!:) :)
+//  SO THAT NO CODE IS NECESSARY TO MAKE VISIBILITY OPTION APPEAR ON THE FLY
+//  BUT INSTEAD, APPEAR AS AN IMMEDIATE OPTION TO SHARE LOCATION.
 json = {
 		"entries":
-			[
-				{ "coords": {"lat":null, "lng":null},
-				"loc_name": null,
-				"timeframe": {"start":null, "end":null} }
-			]
+				{ "coords": {"lat":5, "lng":5},
+				"loc_name": "(This user has not modified the default location.)",
+				"timeframe": {"start":"unspecified", "end":"unspecified"} }
 };
 
-	
+
 function login(login_attempt){
 	
 	username = $("#userfield").val();

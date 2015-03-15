@@ -10,9 +10,8 @@ COURSE: CS 290 - Web Development, Oregon State University
 
 //check for login
 if (!isset($_SESSION['user'])){
-	echo "You must be logged in to view this page.<br>
-		<button onclick='window.location.href = \"index.php\"'>Log In</button>
-	";
+	echo "<div class='box'>You must be logged in to view this page.<br>
+		<button onclick='window.location.href = \"index.php\"' class='button'>Log In</button></div>";
 	die();
 }
 
@@ -65,17 +64,22 @@ if (!isset($_SESSION['user'])){
 	<div onclick="window.location.href = 'logout.php'" class="button">Log Out</div>
 	
 
-	<div id="mapContainer" class="horizontal">
+	<div id="mapContainer" class="horizontal container">
 		<div id="map"></div>
-		<h3>Instructions</h3>
+		<h3 class="box">Instructions</h3>
 		<p class="box">If you've already entered your location...<br>
 			Click on the map pin to see information about your location.<br>
-			If you don't see the pin, try zooming out or dragging the map.
+			If you don't see the pin, try zooming out or dragging the map.<br><br>
+			If you haven't entered your location yet...<br>
+			Go to "Add Or Update Your Location" and provide information in all of its fields.
 		</p>
 	</div>
 	
+	<!-- To modifiy and view data: -->
+	<div class="horizontal">
+	
 	<!-- To enter all data for a new location to be placed on the user's map -->
-	<div id="newEntry" class="horizontal">
+	<div id="newEntry" class="container">
 		<h2 title="Add a location if none exist.">Add Or Update Your Location</h2>
 		
 		<h3 class="box">Location Name: <input id="loc_name" type="text"></h3>
@@ -96,17 +100,52 @@ if (!isset($_SESSION['user'])){
 			</div>
 		</div>
 		
+		<!-- To enter the coordinates of a new location entry: -->
 		<div class="box">
 			<h3 title="Click on the map to get your coordinates.">Location</h3>
 			<p id="lat">Latitude: not yet selected.</p>
 			<p id="lng">Longitude: not yet selected.</p>
+			
+			<!-- using $.post() -->
+			<button class="ajax button">Submit</button>
+			<div id="newEntryErrors"></div>
 		</div>
 		
-		<!-- using $.post() -->
-		<button class="ajax button">Submit</button>
-		<div id="newEntryErrors"></div>
+		<!-- change this to php that gets session variable to reflect whether user is visible (cf accounts.php line 158 -->
+		<div class="box">
+			
+			<?php if (isset($_SESSION['visible'])  && $_SESSION['visible'] == 1): ?>
+				<p id="privacy_notice">Your location is visible to other users.</p>
+				<button id="visibility" value="visible" class="button">Hide My Location</button>
+			<?php else: ?>
+				<p id="privacy_notice">Your location is hidden.</p>
+				<button id="visibility" value="hidden" class="button">Show My Location</button>
+			<?php endif; ?>
+			
+			<p id="vis_errors" style="color:red;"><p>
+		</div>
+		
 	</div>
 	
+	<!-- To filter and see other user's locations -->
+	<div id="viewOthers" class="box container">
+		<h3 title="You can see the location of others when you select them from the list below.">View Other Users</h3>
+		<p>Other users available to display:</p>
+		
+		<button class="allUsers button">Get All Users</button>
+		
+		<!-- Checkboxes go here -->
+		<div id="user_checkboxes"></div>
+		
+		<div id="allUsersErrors"></div>
+	</div>
+	
+	<!-- To delete the current user's account -->
+	<div class="box container">
+		<button onclick="window.location.replace('delete_acct.php');" class="button">Delete My Account</button>
+	</div>
+	
+	</div>
 	
 </body>
 

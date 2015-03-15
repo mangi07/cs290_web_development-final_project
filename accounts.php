@@ -73,7 +73,7 @@ function check_fields($user, $pass){
 //  this will allow user to access main.php
 function db_login($user, $pass, $mysqli){
 	// Prepared statement, stage 1: prepare
-	if (!($stmt = $mysqli->prepare("SELECT password FROM users WHERE username = ?"))) {
+	if (!($stmt = $mysqli->prepare("SELECT password, visible FROM users WHERE username = ?"))) {
 		//actual message to user
 		echo "Error: Failed to check the database for this user.<br>";
 		return;
@@ -94,7 +94,8 @@ function db_login($user, $pass, $mysqli){
 	
 	//get result of query, the password from the database
 	$db_pass = NULL;
-	if (!$stmt->bind_result($db_pass)) {
+	$visible = NULL;	//to be assigned to session variable at the bottom of this script
+	if (!$stmt->bind_result($db_pass, $visible)) {
 		//message to user
 		echo "Failed to check the database for this user's password.<br>";
 		return;
@@ -111,6 +112,8 @@ function db_login($user, $pass, $mysqli){
 		//create session variable to indicate successful login
 		if(session_status() == PHP_SESSION_ACTIVE){
 			$_SESSION["user"] = $user;
+			//create session variable to indicate visibility...needs to get it from database..then use this session variable at the bottom of main.php
+			$_SESSION["visible"] = $visible;
 		} else {
 			echo "Error: unknown!<br>";
 		}
@@ -129,9 +132,9 @@ function create_user($user, $pass, $mysqli, $json){
 	$json = json_encode($json, JSON_FORCE_OBJECT);
 	
 	// Prepared statement, stage 1: prepare
-	if (!($stmt = $mysqli->prepare("INSERT INTO users VALUES (?, ?, ?)"))) {
+	if (!($stmt = $mysqli->prepare("INSERT INTO users VALUES (?, ?, ?, 0)"))) {
 		//message to user
-		echo "Error: Failed to check the database for this user.<br>";	
+		echo "Error: This user may already exist.<br>";	
 		return;
 	}
 
@@ -148,10 +151,12 @@ function create_user($user, $pass, $mysqli, $json){
 		return;
 	}
 	
-	echo "success";
+	
 	//create session variable to indicate successful login
 	if(session_status() == PHP_SESSION_ACTIVE){
 		$_SESSION["user"] = $user;
+		$_SESSION["visible"] = 0;
+		echo "success";
 	} else {
 		echo "Error: unknown!<br>";
 	}

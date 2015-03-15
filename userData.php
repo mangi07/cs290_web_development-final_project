@@ -21,11 +21,6 @@ if (isset($_SESSION["user"])){
 	
 	$user = $_SESSION["user"];
 	
-	//when user wants to see another user's location...
-	if (isset($_POST["user"])) {
-		$user = $_POST["user"];
-	}
-	
 	if(!($stmt = $mysqli->prepare(
 		"SELECT locations FROM users WHERE username = ?"
 	))){

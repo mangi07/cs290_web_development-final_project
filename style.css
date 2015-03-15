@@ -16,10 +16,16 @@ body {
 	border: 1px solid #FFF;
 }
 
+.container{
+	margin: 12px 12px 12px 12px;
+    padding: 3px 3px 3px 3px;
+	border: 3px solid #933;
+}
+
 .centered {
 	margin-left:auto;
 	margin-right:auto;
-	width:70%;
+	width:90%;
 	text-align:center;
 }
 

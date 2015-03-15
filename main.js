@@ -33,28 +33,16 @@ JSON structure used:
 
 //VARIABLES
 var map;
-var marker;
+var markers = new Array();
 var userData;
 var latitude, longitude;
 var html_loc;
 var popup;
+var allUsers;
+var html_users;
+var other_user_data;
 
-window.onload = function (){
-
-	//data RETURNS JSON OBJECT STRING
-	$.post( "userData.php", function( data ) {
-		userData = JSON.parse(data);
-		if (userData.entries.coords != undefined) {
-			html_loc = locationString(userData);
-			initMap(latitude, longitude);
-			showLocation(html_loc);
-		} else {
-			initMap(5, 5);
-		}
-	});
-	
-	
-	//sets location variables and
+//sets location variables and
 	//  returns an html string of location info from userData
 	function locationString (userData) {
 		name = userData.entries.loc_name;
@@ -76,6 +64,24 @@ window.onload = function (){
 		return html_string;
 	
 	}
+
+
+window.onload = function (){
+
+	//data RETURNS JSON OBJECT STRING
+	$.post( "userData.php", function( data ) {
+		userData = JSON.parse(data);
+		if (userData.entries.coords != undefined) {
+			html_loc = locationString(userData);
+			initMap(latitude, longitude);
+			showLocation(html_loc);
+		} else {
+			initMap(5, 5);
+		}
+	});
+	
+	
+	
 	
 	//showLocation must be called to set location prior to this:
 	function initMap (lat, lng) {
@@ -95,9 +101,9 @@ window.onload = function (){
 	//places a pin on the map
 	function showLocation (html_string) {
 		
-		marker = L.marker([latitude, longitude]);
-		marker.bindPopup(html_string);
-		map.addLayer(marker);
+		markers[0] = L.marker([latitude, longitude]);
+		markers[0].bindPopup(html_string);
+		map.addLayer(markers[0]);
 	}
 			
 	
@@ -195,8 +201,8 @@ window.onload = function (){
 		$.post( "update.php", {loc:loc} )
 			.done(function( data ) {
 				//REMOVE THE OLD MARKER FROM THE MAP
-				if (marker != null) {
-					map.removeLayer(marker);
+				if (markers[0] != null) {
+					map.removeLayer(markers[0]);
 				}
 				
 				//REMOVE THE POPUP FROM THE MAP
@@ -217,6 +223,71 @@ window.onload = function (){
 	});
 	
 	
+	//FUNCTION TO GET ALL USER DATA INTO A JSON OBJECT
+	//  TO PREPARE FOR FILTERING
+	$('button.allUsers').on('click', function() {
+		
+		//GET ALL USER DATA AND CREATE SELECTIONS
+		$.post( "allUsers.php" )
+			.done(function( data ) {
+				allUsers = JSON.parse(data);
+				//CREATE CHECKBOXES TO FILTER DATA
+				html_users = "";
+				var name;
+				var none_visible = true;
+				for (user in allUsers) {
+					//also filter to get only users who chose to be visible
+					if (allUsers[user][2]) {
+						name = allUsers[user][0];
+						html_users += "<p><input type='checkbox' name='users' value='" + name + "'>" + name + "</p>";
+						none_visible = false;
+					}
+					
+				}
+				
+				//DISPLAY RESULTS OF SEARCH
+				if (none_visible){
+					html_users = "<p>None visible.</p>"
+				} else {
+					html_users += "<button class='button' onclick='showUsers();'>Show Users on Map</button>";
+				}
+				$('#user_checkboxes').html(html_users);
+				
+			})
+			.fail(function( data ) {//HAVE DATA RETURN ERROR MESSAGES
+				$('#allUsersErrors').html(data);
+			});
+			
+	});
+	
+	//FUNCTION TO TOGGLE THE VISIBILITY OF THE CURRENT USER
+	$('#visibility').on('click', function() {
+		if ($('#visibility').prop('value') == "visible") {
+			//alert($('#visibility').prop('value'));
+			$.post("changeVisibility.php", {visible:"0"})
+				.done( function() {
+					$('#visibility').prop('value', 'hidden');
+					$('#privacy_notice').html('Your location is hidden.');
+					$('#visibility').html('Share My Location');
+				})
+				.fail( function( data ) {
+					$('#vis_errors').html(data);
+				});
+		} else if ($('#visibility').prop('value') == "hidden") {
+			//alert($('#visibility').prop('value'));
+			$.post("changeVisibility.php", {visible:"1"})
+				.done( function() {
+					$('#visibility').prop('value', 'visible');
+					$('#privacy_notice').html('Your location is visible to other users.');
+					$('#visibility').html('Hide My Location');
+				})
+				.fail( function( data ) {
+					$('#vis_errors').html(data);
+				});
+		}
+	});
+	
+	
 	//LOGOUT
 	$('#logout').on('click', function() {
 		$.post( "logout.php" );
@@ -228,4 +299,34 @@ window.onload = function (){
 	
 }
 
+function showUsers() {
+		var name_selected;
+		//modified from http://stackoverflow.com/questions/590018/getting-all-selected-checkboxes-in-an-array
+		$("input:checkbox[name='users']:checked").each(function() {
+			
+			//Clear markers array of all other users, if needed.
+			//  (The first marker in markers array is the current user.)
+			while (markers.length > 1) {
+				map.removeLayer(markers.pop());
+			}
+			
+			var name_selected = ($(this).val());
+			for (user in allUsers) {
+				if (name_selected == allUsers[user][0]){
+					other_user_data = allUsers[user][1];
+					var html_string = "User:" + name_selected + "<br>";
+					html_string += locationString(other_user_data);
+					
+					//add this user's location to the map
+					var lat = other_user_data.entries.coords.lat;
+					var lng = other_user_data.entries.coords.lng;
+					var len = markers.push(L.marker([lat, lng]));
+					markers[len-1].bindPopup(html_string);
+					map.addLayer(markers[len-1]);
+				}
+			}
+		});
+	}
 
+
+	
