@@ -15,6 +15,7 @@ COURSE: CS 290 - Web Development, Oregon State University
 	$filePath = implode('/', $filePath);
 	$redirect = "http://" . $_SERVER['HTTP_HOST'] . $filePath;
 	header("Location: {$redirect}/index.php", true);
+	echo "<script>window.location.replace('index.php');</script>";
 	die();
 	
 	
